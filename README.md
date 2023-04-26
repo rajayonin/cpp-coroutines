@@ -191,6 +191,28 @@ task<void> run() {
 [Link to statement](https://godbolt.org/z/bPPjsv4K5).
 
 
+## Exercise 9: Simple Generator
+
+Implement `generator<T>`
+- `next()` should resume the coroutine and return `false` if coroutine is suspended at its final suspend point
+
+```cpp
+generator<int> simple() {
+    // co_await std::suspend_never{}; // should not compile
+    co_yield 1;
+    co_yield 2;
+}
+```
+
+```cpp
+auto g = simple();
+while(g.next())
+std::cout << g.value() << ' ';
+std::cout << '\n';
+```
+
+[Link to statement](https://godbolt.org/z/b435YxGds).
+
 
 # Installation and execution
 
