@@ -1,6 +1,5 @@
 # Introduction to C++20 Coroutines
 
-Slides [here](slides.pdf).
 
 ## Exercise 1: Our Future?
 
@@ -213,3 +212,9 @@ The executables are under `build/src/`.
 
 ## Using GPRbuild
 Just run `gprbuild`. The executables are under `bin/`.
+
+
+# Extra information
+
+- Library implementation of coroutines, with examples: [github.com/mpusz/mp-coro](https://github.com/mpusz/mp-coro).
+- Slides [here](slides.pdf).
