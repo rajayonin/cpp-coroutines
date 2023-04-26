@@ -16,10 +16,13 @@ struct coro_deleter {
 template<typename T>
 using promise_ptr = std::unique_ptr<T, coro_deleter>;
 
+template<typename T>
+concept task_value_type = std::move_constructible<T> || std::is_void_v<T>;
+
 
 // ********* TASK *********
 
-template<typename T>
+template<task_value_type T>
 struct [[nodiscard]] task {
   struct promise_type {
     std::optional<T> result;
