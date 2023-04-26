@@ -19,6 +19,7 @@ using promise_ptr = std::unique_ptr<T, coro_deleter>;
 
 // ********* TASK *********
 
+// as void is non-movable, we revert back to typename (we could clean this up with concepts)
 template<typename T>
 struct [[nodiscard]] task {
   struct promise_type {
@@ -43,6 +44,8 @@ private:
   promise_ptr<promise_type> promise_;
 };
 
+
+// use a template specialization for the void case
 template<>
 struct [[nodiscard]] task<void> {
   struct promise_type {

@@ -21,54 +21,57 @@
 Coroutine definition & setup
 */
 
+
+/*
+Destructor
+*/
+
 struct coroutine_deleter {
-  template<typename Promise>
-  void operator() (Promise *promise) const noexcept {
-    auto handle = std::coroutine_handle<Promise>::from_promise(*promise);
-    if (handle)
-      handle.destroy();
-  }
+    template<typename Promise>
+    void operator() (Promise *promise) const noexcept {
+        auto handle = std::coroutine_handle<Promise>::from_promise(*promise);
+        if (handle)
+        handle.destroy();
+    }
 };
 
 template<typename T>
 using promise_ptr = std::unique_ptr<T, coroutine_deleter>;
 
+
+// say you can move it
 template<std::move_constructible T>
-// using a task as a wrapper
 struct [[nodiscard]] task {
   struct promise_type {
 
-    // we'll save the result value in std::optional
-    std::optional<T> result;
+        std::optional<T> result;
 
-    static std::suspend_never initial_suspend() noexcept { return {}; }
-    // suspend in final to allow to read result (need to destroy)
-    static std::suspend_always final_suspend() noexcept { return {}; }
+        // static, noexcept + change return types to make better interface
+        static std::suspend_never initial_suspend() noexcept { return {}; }
+        static std::suspend_always final_suspend() noexcept { return {}; }
 
-    task get_return_object() noexcept { return this; }
-    void return_value(T v) noexcept { result = std::move(v); }
+        task get_return_object() noexcept { return this; }
+        void return_value(T v) noexcept { result = std::move(v); }
 
-    // re-throw exceptions
-    [[noreturn]] static void unhandled_exception() { throw; }
-  };
+        [[noreturn]] static void unhandled_exception() { throw; }
+     };
 
-  // interface to get the result (using protection)
-  [[nodiscard]] const T get_result() const noexcept { return *promise_->result; }
+    [[nodiscard]] const T get_result() const noexcept { return *promise_->result; }
 
-  // protect promise
-  private:
-    promise_ptr<promise_type> promise_;
+    private:
+        
+        promise_ptr<promise_type> promise_;
 
-    // task constructor (need promise)
-    task(promise_type* p) : promise_(p) {}
+        // constructor
+        task(promise_type* p) : promise_(p) {}
 };
 
 
 task<int> foo() {
-  co_return 42;
+    co_return 42;
 }
 
 
 int main() {
-  std::cout << foo().get_result() << "\n";
+    std::cout << foo().get_result() << "\n";
 }

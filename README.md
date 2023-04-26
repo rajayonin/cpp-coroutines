@@ -44,3 +44,30 @@ std::cout << foo().get_result() << std::endl
 
 
 [Link to statement](https://godbolt.org/z/qEW5dT3sz).
+
+
+## Exercise 3: Better task
+
+Make exercise 2 better.
+
+
+## Exercise 4: Task of `void`
+
+Extend our task to support no return type as well.
+
+```cpp
+task <int> foo() {
+    co_return 42;
+}
+
+task<void> coro() {
+    std::cout << foo().get_result() << std::endl
+    co_return;
+}
+```
+
+```c
+auto c = coro();
+```
+
+[Link to statement](https://godbolt.org/z/aKvbKeecj).
