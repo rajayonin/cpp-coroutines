@@ -156,3 +156,40 @@ int main()
 ```
 
 [Link to statement](https://godbolt.org/z/58x6cPe7T).
+
+
+## Exercise 8: Awaiting tasks
+
+Associate an awaiter type with a `task<T>` that:
+- suspends if the coroutine is not suspended at its final suspend point
+- on resume:
+    - does nothing for `task<void>` case
+    - otherwise, returns a result stored in `std::optional`
+- no action is being done on suspend
+
+```cpp
+task<int> foo()
+{
+  co_return 42;
+}
+
+task<int> bar()
+{
+  const int res = co_await foo();
+  std::cout << "Result of foo: " << res << "\n";
+  co_return res + 23;
+}
+
+task<void> baz()
+{
+  const auto res = co_await bar();
+  std::cout << "Result of bar: " << res << "\n";
+}
+
+task<void> run()
+{
+  co_await baz();
+}
+```
+
+[Link to statement](https://godbolt.org/z/bPPjsv4K5).

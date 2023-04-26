@@ -50,5 +50,6 @@ int main (int argc, char *argv[]) {
 
   std::cout << "Hello, Corroutines!" << std::endl;
   int x = foo().get();
+  std::cout << x << std::endl;
   return 0;
 }
