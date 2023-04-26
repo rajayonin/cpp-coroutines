@@ -71,3 +71,86 @@ auto c = coro();
 ```
 
 [Link to statement](https://godbolt.org/z/aKvbKeecj).
+
+
+## Exercise 5: `sleep_for()`
+
+Implement the `sleep_for()` awaiter type that will suspend a current thread for a specified duration.
+
+```cpp
+template<specialization_of<std::chrono::duration> D>
+struct sleep_for {
+    D duration;
+};
+```
+
+```cpp
+task<void> foo() {
+    using namespace std::chrono_literals;
+
+    std::cout << "about to sleep\n";
+    co_await sleep_for(1s);
+    std::cout << "about to return\n";
+}
+```
+
+```cpp
+auto task = foo();
+```
+
+[Link to statement](https://godbolt.org/z/qq4xsqPqn).
+
+
+## Exercise 6: `std::chrono::duration` as awaitable
+
+Refactor the previous exercise to directly work with `std::chrono::duration`
+
+```cpp
+task<void> foo() {
+    using namespace std::chrono_literals;
+
+    std::cout << "about to sleep\n";
+    co_await 1s;
+    std::cout << "about to return\n";
+}
+```
+
+[Link to statement](https://godbolt.org/z/vrEenj6TT).
+
+
+## Exercise 7: Making `std::chrono::duration` contextually awaitable
+
+Refactor the previous exercise to use our `std::chrono::duration`-specific awaitable implementation only while awaiting in `task<T>`-based coroutine.
+
+```cpp
+using namespace std::chrono_literals;
+
+task<void> foo() {
+    co_await std::suspend_never{};
+
+    std::cout << "about to sleep\n";
+    co_await 1s;
+
+    std::cout << "about to sleep again\n";
+    auto dur = 1s;
+    co_await dur;
+    std::cout << "about to return\n";
+}
+```
+
+```cpp
+std::future<void> boo()
+{
+  co_await std::suspend_never{};
+  std::cout << "You shall not sleep!\n";
+  co_await 1s;  // Should not compile
+}
+```
+
+```cpp
+int main()
+{
+  auto task = foo();
+  auto fut = boo();
+}
+```
