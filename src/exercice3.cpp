@@ -21,7 +21,19 @@
 Coroutine definition & setup
 */
 
+struct coroutine_deleter {
+  template<typename Promise>
+  void operator() (Promise *promise) const noexcept {
+    auto handle = std::coroutine_handle<Promise>::from_promise(*promise);
+    if (handle)
+      handle.destroy();
+  }
+};
+
 template<typename T>
+using promise_ptr = std::unique_ptr<T, coroutine_deleter>;
+
+template<std::move_constructible T>
 // using a task as a wrapper
 struct [[nodiscard]] task {
   struct promise_type {
@@ -29,33 +41,23 @@ struct [[nodiscard]] task {
     // we'll save the result value in std::optional
     std::optional<T> result;
 
-    auto initial_suspend() const { return std::suspend_never{}; }
+    static std::suspend_never initial_suspend() noexcept { return {}; }
     // suspend in final to allow to read result (need to destroy)
-    auto final_suspend() const noexcept { return std::suspend_always{}; }
+    static std::suspend_always final_suspend() noexcept { return {}; }
 
-    auto get_return_object() { return task(this); }
-    void return_value(T v) { result = std::move(v); }
+    task get_return_object() noexcept { return this; }
+    void return_value(T v) noexcept { result = std::move(v); }
 
     // re-throw exceptions
-    [[noreturn]] void unhandled_exception() const { throw; }
+    [[noreturn]] static void unhandled_exception() { throw; }
   };
 
   // interface to get the result (using protection)
-  [[nodiscard]] const T get_result() const { return *promise_->result; }
-
-  task(const task&) = delete;
-  task& operator=(const task&) = delete;
-  task(task&& rhs) noexcept : promise_(std::exchange(rhs.promise_, nullptr)) {}
-  task& operator=(task&& rhs) noexcept { promise_ = std::exchange(rhs.promise_, nullptr); return *this;}
-  ~task() {
-    if(!promise_) return;
-    auto coro = std::coroutine_handle<promise_type>::from_promise(*promise_);
-    if(coro) coro.destroy();
-  }
+  [[nodiscard]] const T get_result() const noexcept { return *promise_->result; }
 
   // protect promise
   private:
-    promise_type *promise_;
+    promise_ptr<promise_type> promise_;
 
     // task constructor (need promise)
     task(promise_type* p) : promise_(p) {}
