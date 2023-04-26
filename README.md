@@ -154,3 +154,5 @@ int main()
   auto fut = boo();
 }
 ```
+
+[Link to statement](https://godbolt.org/z/58x6cPe7T).
