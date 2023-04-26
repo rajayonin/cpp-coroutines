@@ -11,7 +11,8 @@ project Coroutines is
 
    package Compiler is
       for Driver ("C++") use "gcc";
-      for Switches ("C++") use ("-std=c++20");
+      for Switches ("C++") use ("-std=c++20", "-O3", "-Wall", "-Wpedantic",
+         "-Wextra");
    end Compiler;
 
 end Coroutines;

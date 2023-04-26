@@ -46,7 +46,7 @@ std::future<int> foo() {
   return f;
 }
 
-int main (int argc, char *argv[]) {
+int main () {
 
   std::cout << "Hello, Corroutines!" << std::endl;
   int x = foo().get();
