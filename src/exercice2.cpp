@@ -15,46 +15,47 @@
 #include <iostream>
 #include <optional>
 
-template<typename R, typename... Args>
-struct std::coroutine_traits<std::future<R>, Args...> {
-  struct promise_type {
-    std::promise<R> p;
-    auto get_return_object() { return p.get_future(); }
-    auto initial_suspend() { return std::suspend_never{}; }
-    auto final_suspend() noexcept { return std::suspend_never{}; }
-    void return_value(R v) { p.set_value(v); }
-    void unhandled_exception() { p.set_exception(std::current_exception()); }
-  };
-};
 
-std::future<int> foo1()
-{
-  co_return 42;
-}
+/*
+Coroutine definition & setup
+*/
 
 template<typename T>
+// using a task as a wrapper
 struct [[nodiscard]] task {
     struct promise_type {
+
+        // we'll save the result value in std::optional
         std::optional<T> result;
-        auto get_return_object() { return task(this); }
+
         auto initial_suspend() const { return std::suspend_never{}; }
+        // suspend in final to allow to read result (need to destroy)
         auto final_suspend() const noexcept { return std::suspend_always{}; }
+
+        auto get_return_object() { return task(this); }
         void return_value(T v) { result = std::move(v); }
+
+        // re-throw exceptions
         [[noreturn]] void unhandled_exception() const { throw; }
     };
+
+    // interface to get the result (using protection)
     [[nodiscard]] const T get_result() const { return *promise_->result; }
-private:
-    promise_type *promise_;
-    task(promise_type* p) : promise_(p) {}
+
+    // protect promise
+    private:
+        promise_type *promise_;
+
+        // task constructor (need promise)
+        task(promise_type* p) : promise_(p) {}
 };
 
-task<int> foo2()
-{
+
+task<int> foo() {
   co_return 42;
 }
 
-int main()
-{
-  std::cout << foo1().get() << "\n";
-  std::cout << foo2().get_result() << "\n";
+
+int main() {
+  std::cout << foo().get_result() << "\n";
 }
