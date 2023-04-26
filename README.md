@@ -197,3 +197,22 @@ task<void> run()
 
 
 # Installation and execution
+
+In order to compile the source code there are two ways:
+ * Using CMake
+ * Using GPRbuild
+
+## Using CMake
+Create a `build` directory, go inside and run `cmake`.
+
+```bash
+mkdir -pv build
+cd build
+cmake ..
+make
+```
+
+The executables are under `build/src/`.
+
+## Using GPRbuild
+Just run `gprbuild`. The executables are under `bin`.
