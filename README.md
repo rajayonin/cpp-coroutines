@@ -1,6 +1,9 @@
-# cpp-coroutines
+# Introduction to C++20 Coroutines
+
+Slides [here](slides.pdf).
 
 ## Exercise 1: Our Future?
+
 Make the below coroutine compile and work as expected:
 ```cpp
 std::future<int> foo(){
@@ -139,19 +142,17 @@ task<void> foo() {
 ```
 
 ```cpp
-std::future<void> boo()
-{
-  co_await std::suspend_never{};
-  std::cout << "You shall not sleep!\n";
-  co_await 1s;  // Should not compile
+std::future<void> boo() {
+    co_await std::suspend_never{};
+    std::cout << "You shall not sleep!\n";
+    co_await 1s;  // Should not compile
 }
 ```
 
 ```cpp
-int main()
-{
-  auto task = foo();
-  auto fut = boo();
+int main() {
+    auto task = foo();
+    auto fut = boo();
 }
 ```
 
@@ -168,27 +169,23 @@ Associate an awaiter type with a `task<T>` that:
 - no action is being done on suspend
 
 ```cpp
-task<int> foo()
-{
-  co_return 42;
+task<int> foo() {
+    co_return 42;
 }
 
-task<int> bar()
-{
-  const int res = co_await foo();
-  std::cout << "Result of foo: " << res << "\n";
-  co_return res + 23;
+task<int> bar() {
+    const int res = co_await foo();
+    std::cout << "Result of foo: " << res << "\n";
+    co_return res + 23;
 }
 
-task<void> baz()
-{
-  const auto res = co_await bar();
-  std::cout << "Result of bar: " << res << "\n";
+task<void> baz() {
+    const auto res = co_await bar();
+    std::cout << "Result of bar: " << res << "\n";
 }
 
-task<void> run()
-{
-  co_await baz();
+task<void> run() {
+    co_await baz();
 }
 ```
 
@@ -199,8 +196,8 @@ task<void> run()
 # Installation and execution
 
 In order to compile the source code there are two ways:
- * Using CMake
- * Using GPRbuild
+- Using CMake
+- Using GPRbuild
 
 ## Using CMake
 Create a `build` directory, go inside and run `cmake`.
@@ -215,4 +212,4 @@ make
 The executables are under `build/src/`.
 
 ## Using GPRbuild
-Just run `gprbuild`. The executables are under `bin`.
+Just run `gprbuild`. The executables are under `bin/`.
