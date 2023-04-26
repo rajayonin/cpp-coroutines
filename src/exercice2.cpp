@@ -9,6 +9,7 @@
 // - Remember that `task<T>` is a resource wrapper
 //   - make it safe, easy to use and hard to abuse
 
+#include <utility>
 #include <coroutine>
 #include <exception>
 #include <future>
@@ -41,6 +42,16 @@ struct [[nodiscard]] task {
 
     // interface to get the result (using protection)
     [[nodiscard]] const T get_result() const { return *promise_->result; }
+
+    task(const task&) = delete;
+    task& operator=(const task&) = delete;
+    task(task&& rhs) noexcept : promise_(std::exchange(rhs.promise_, nullptr)) {}
+    task& operator=(task&& rhs) noexcept { promise_ = std::exchange(rhs.promise_, nullptr); return *this;}
+    ~task() {
+      if(!promise_) return;
+      auto coro = std::coroutine_handle<promise_type>::from_promise(*promise_);
+      if(coro) coro.destroy();
+    }
 
     // protect promise
     private:
